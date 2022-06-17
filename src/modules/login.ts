@@ -26,9 +26,9 @@ export default async function loginAllAccounts() {
         console.log(`Logging in ${phoneNumber}`);
 
         const client = true;
-
-        if (client) console.log(`Logged in ${phoneNumber} Successfully`);
-        else console.log(`Failed to login ${phoneNumber}`);
+        if (client) {
+          console.log(`Logged in ${phoneNumber} Successfully`);
+        } else console.log(`Failed to login ${phoneNumber}`);
       } catch (err) {
         return console.log(err);
       }

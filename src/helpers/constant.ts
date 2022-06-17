@@ -2,6 +2,11 @@ export interface Phones {
   index: number;
   phoneNumber: string;
   sessionString: string;
+  proxy: boolean;
+  ip: string;
+  port: number;
+  username: string;
+  password: string;
 }
 
 export const message = `

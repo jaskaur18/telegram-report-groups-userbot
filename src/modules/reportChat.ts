@@ -4,8 +4,9 @@ import phoneJson from '../sessions.json';
 import { Api, errors } from 'telegram';
 import loginAccount from '../helpers/loginAccount';
 import env from '../helpers/env';
+import getProxy from '../helpers/proxy';
 
-export default function reportChat() {
+export default async function reportChat() {
   try {
     //check if sessions.json exits
     if (!fs.existsSync('./src/sessions.json'))
@@ -23,13 +24,68 @@ export default function reportChat() {
 
     //get message from message.txt
 
-    accountList.map(async (phone, index) => {
-      const { phoneNumber, sessionString } = phone;
+    //loop through accountList for loop
+    for (let i = 0; i < accountList.length; i++) {
+      let phone = accountList[i];
+      let {
+        // eslint-disable-next-line prefer-const
+        index,
+        // eslint-disable-next-line prefer-const
+        phoneNumber,
+        // eslint-disable-next-line prefer-const
+        sessionString,
+        // eslint-disable-next-line prefer-const
+        proxy,
+        ip,
+        port,
+        username,
+        password,
+      } = phone;
 
-      let client = await loginAccount(index, phoneNumber, sessionString);
+      if (!proxy) {
+        //set proxy
+        const _proxy = await getProxy();
+        //set ip and port
+        ip = _proxy.ip;
+        port = +_proxy.port;
+        //set username and password
+        username = _proxy.username;
+        password = _proxy.password;
 
-      if (!client) return console.log(`${phoneNumber} not authorized`);
+        phone = {
+          index,
+          phoneNumber,
+          sessionString,
+          proxy: true,
+          username,
+          password,
+          ip,
+          port,
+        };
+        //update accountList to sessions.json
+        fs.writeFileSync(
+          './src/sessions.json',
+          JSON.stringify(accountList, null, 2),
+        );
+      }
 
+      console.log(`Login Account ${index} Phone Number ${phoneNumber}`);
+
+      let client = await loginAccount(
+        index,
+        phoneNumber,
+        sessionString,
+        ip,
+        port,
+        username,
+        password,
+      );
+
+      if (!client) {
+        //remove object from accountList
+        accountList.splice(index, 1);
+        return false;
+      }
       console.log(`${phoneNumber} authorized`);
 
       const result = await client.invoke(
@@ -39,16 +95,17 @@ export default function reportChat() {
           message: `${message}`,
         }),
       );
-      if (!result)
-        return console.log(
-          `${env.groupUsername} not reported By ${phoneNumber}`,
-        );
+
+      if (!result) {
+        console.log(`${env.groupUsername} not reported By ${phoneNumber}`);
+        continue;
+      }
 
       await client.sendMessage('@notoscam', { message: message });
       client.disconnect();
       client = false;
       return console.log('reported by', phoneNumber);
-    });
+    }
   } catch (err) {
     if (err instanceof errors.AuthKeyError) {
       console.log(`Not able to report chat ${err?.code}`);

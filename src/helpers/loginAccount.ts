@@ -14,12 +14,24 @@ export default async function loginAccount(
   _index: number,
   phoneNumber: string,
   sessionString: string,
+  ip: string,
+  port: number,
+  username: string,
+  password: string,
 ): Promise<TelegramClient | false> {
   try {
     const stringSession = new StringSession(sessionString);
 
     //create new TelegramClient
     const client = new TelegramClient(stringSession, env.apiId, env.apiHash, {
+      // proxy: {
+      //   socksType: 5,
+      //   username,
+      //   password,
+      //   ip,
+      //   port,
+      // },
+      requestRetries: 1,
       baseLogger: new Logger(LogLevel.ERROR),
     });
 
