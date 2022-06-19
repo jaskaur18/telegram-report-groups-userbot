@@ -42,32 +42,32 @@ export default async function reportChat() {
         password,
       } = phone;
 
-      if (!proxy) {
-        //set proxy
-        const _proxy = await getProxy();
-        //set ip and port
-        ip = _proxy.ip;
-        port = +_proxy.port;
-        //set username and password
-        username = _proxy.username;
-        password = _proxy.password;
+      // if (!proxy) {
+      //   //set proxy
+      //   const _proxy = await getProxy();
+      //   //set ip and port
+      //   ip = _proxy.ip;
+      //   port = +_proxy.port;
+      //   //set username and password
+      //   username = _proxy.username;
+      //   password = _proxy.password;
 
-        phone = {
-          index,
-          phoneNumber,
-          sessionString,
-          proxy: true,
-          username,
-          password,
-          ip,
-          port,
-        };
-        //update accountList to sessions.json
-        fs.writeFileSync(
-          './src/sessions.json',
-          JSON.stringify(accountList, null, 2),
-        );
-      }
+      //   phone = {
+      //     index,
+      //     phoneNumber,
+      //     sessionString,
+      //     proxy: true,
+      //     username,
+      //     password,
+      //     ip,
+      //     port,
+      //   };
+      //   //update accountList to sessions.json
+      //   fs.writeFileSync(
+      //     './src/sessions.json',
+      //     JSON.stringify(accountList, null, 2),
+      //   );
+      // }
 
       console.log(`Login Account ${index} Phone Number ${phoneNumber}`);
 
@@ -84,7 +84,7 @@ export default async function reportChat() {
       if (!client) {
         //remove object from accountList
         accountList.splice(index, 1);
-        return false;
+        continue;
       }
       console.log(`${phoneNumber} authorized`);
 
@@ -102,9 +102,10 @@ export default async function reportChat() {
       }
 
       await client.sendMessage('@notoscam', { message: message });
-      client.disconnect();
+      await client.disconnect();
       client = false;
-      return console.log('reported by', phoneNumber);
+      console.log('reported by', phoneNumber);
+      continue;
     }
   } catch (err) {
     if (err instanceof errors.AuthKeyError) {
